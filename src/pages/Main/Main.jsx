@@ -6,18 +6,26 @@ import { NewsList } from '../../components/NewsList/NewsList'
 import { Skeleton } from '../../components/Header/Skeleton/Skeleton'
 
 import { Pagination } from '../../components/Pagination/Pagination'
+import { getCategories } from '../../api/apiNews'
+import { Categories } from '../../components/Categories/Categories'
 export const Main = () => { 
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState('All');
 
   const totalPages = 10;
   const pageSize  = 10;
    
   const fetchNews = async(currentPage)=>{
     try{
-        const response= await getNews(currentPage,pageSize);
-        console.log(response.news);
+        const response= await getNews({
+          page_number: currentPage,
+          page_size: pageSize,
+          category: selectedCategories === 'All' ? null : selectedCategories
+        });
+
         setNews(response.news);
     }catch(e){
       console.warn(e);
@@ -25,10 +33,29 @@ export const Main = () => {
       setIsLoading(false);
     }
   }
-  
+
+  const fetchCategories = async()=>{
+    try{
+        const response= await getCategories();
+        setCategories(["All",...response.categories]);
+     
+      
+     
+    }catch(error){
+      console.warn(error);
+    } 
+  }
+
+
+  useEffect(()=>{
+    fetchCategories();
+  },[]);
+
   useEffect(()=>{
     fetchNews(currentPage);
-  },[currentPage])
+
+
+  },[currentPage,selectedCategories])
 
   const handleNextPage= () =>{
     if(currentPage< totalPages){
@@ -43,7 +70,11 @@ export const Main = () => {
   }
 
   return (
+   
     <main className={styles.main}>
+      <Categories categories={categories} setSelectedCategories={setSelectedCategories} selectedCategories={selectedCategories}/>
+
+
     {news.length > 0 && !isLoading  ?  <NewsBanner item={news[0]}/> : <Skeleton type={'banner'} count={1}/>}
 
     <Pagination 
