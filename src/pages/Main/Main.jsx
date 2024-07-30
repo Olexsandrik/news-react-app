@@ -8,22 +8,28 @@ import { Skeleton } from '../../components/Header/Skeleton/Skeleton'
 import { Pagination } from '../../components/Pagination/Pagination'
 import { getCategories } from '../../api/apiNews'
 import { Categories } from '../../components/Categories/Categories'
+import { Search } from '../../components/Header/Search/Search'
+import { useDebounse } from '../../Helpers/Hooks/useDebounce'
 export const Main = () => { 
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState('All');
+  const [keywords, setKeyWords] = useState('');
 
   const totalPages = 10;
   const pageSize  = 10;
+
+  const debounse = useDebounse(keywords, 1500);
    
   const fetchNews = async(currentPage)=>{
     try{
         const response= await getNews({
           page_number: currentPage,
           page_size: pageSize,
-          category: selectedCategories === 'All' ? null : selectedCategories
+          category: selectedCategories === 'All' ? null : selectedCategories,
+          keywords: debounse,
         });
 
         setNews(response.news);
@@ -53,9 +59,7 @@ export const Main = () => {
 
   useEffect(()=>{
     fetchNews(currentPage);
-
-
-  },[currentPage,selectedCategories])
+  },[currentPage,selectedCategories,debounse])
 
   const handleNextPage= () =>{
     if(currentPage< totalPages){
@@ -72,6 +76,8 @@ export const Main = () => {
   return (
    
     <main className={styles.main}>
+      
+      <Search keywords={keywords} setKeyWords={setKeyWords}/>
       <Categories categories={categories} setSelectedCategories={setSelectedCategories} selectedCategories={selectedCategories}/>
 
 
