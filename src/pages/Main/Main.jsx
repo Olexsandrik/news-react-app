@@ -1,17 +1,12 @@
 import styles from "./styles.module.css";
-import { NewsBanner } from "../../components/Header/NewsBanner/NewsBanner";
-import { useState } from "react";
-import { getNews, getCategories } from "../../api/apiNews";
-import { NewsList } from "../../components/NewsList/NewsList";
+import { getNews } from "../../api/apiNews";
 import { Skeleton } from "../../components/Header/Skeleton/Skeleton";
-import { Pagination } from "../../components/Pagination/Pagination";
-import { Categories } from "../../components/Categories/Categories";
-import { Search } from "../../components/Header/Search/Search";
 import { useDebounse } from "../../Helpers/Hooks/useDebounce";
-import { PAGESIZE, TOTAL_PAGES } from "../../components/constant/constant";
+import { PAGESIZE } from "../../components/constant/constant";
 import { useFetching } from "../../Helpers/Hooks/useFetching";
 import { useFilters } from "../../Helpers/Hooks/useFilters";
-
+import { LatestNews } from "../../components/LatestNews/LasetsNews";
+import { NewsByFilter } from "../../components/newsByFilters/NewsByFilter";
 export const Main = () => {
   const { filters, changeFilters } = useFilters({
     page_number: 1,
@@ -27,55 +22,20 @@ export const Main = () => {
     keywords: debounse,
   });
 
-  const { data: categoriesData } = useFetching(getCategories);
-
-  const handleNextPage = () => {
-    if (filters.page_number < TOTAL_PAGES) {
-      changeFilters("page_number", filters.page_number + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (filters.page_number > 1) {
-      changeFilters("page_number", filters.page_number - 1);
-    }
-  };
-
   return (
     <main className={styles.main}>
-      <Search
-        keywords={filters.keywords}
-        changeFilters={(keywords) => changeFilters("keywords", keywords)}
-      />
-      {categoriesData && (
-        <Categories
-          categories={categoriesData.categories}
-          setSelectedCategories={(category) =>
-            changeFilters("category", category)
-          }
-          selectedCategories={filters.category}
-        />
-      )}
-
       {newsData?.news?.length > 0 && !newsLoading ? (
-        <NewsBanner item={newsData.news[0]} />
+        <LatestNews isLoading={newsLoading} banners={newsData.news} />
       ) : (
-        <Skeleton type={"banner"} count={1} />
+        <Skeleton type={"banner"} count={10} direction={'row'} />
       )}
 
-      <Pagination
-        totalPages={TOTAL_PAGES}
-        handleNextPage={handleNextPage}
-        handlePrevPage={handlePrevPage}
-        setCurrentPage={(page) => changeFilters("page_number", page)}
-        currentPage={filters.page_number}
+      <NewsByFilter
+        filters={filters}
+        newsLoading={newsLoading}
+        news={newsData?.news}
+        changeFilters={changeFilters}
       />
-
-      {!newsLoading ? (
-        <NewsList news={newsData?.news} />
-      ) : (
-        <Skeleton type={"item"} count={10} />
-      )}
     </main>
   );
 };
