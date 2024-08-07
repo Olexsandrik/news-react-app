@@ -1,31 +1,29 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import styles from "./styles.module.css";
 
-export const Categories = ({
-  categories,
-  setSelectedCategories,
-  selectedCategories,
-}) => {
-  return (
-    <div className={styles.categories}>
-      <button
-        onClick={() => setSelectedCategories(null)}
-        className={!selectedCategories ? styles.active : styles.item}
-      >
-        All
-      </button>
-
-      {categories.map((category) => (
+export const Categories = forwardRef(
+  ({ categories, setSelectedCategories, selectedCategories }, ref) => {
+    return (
+      <div ref={ref} className={styles.categories}>
         <button
-          onClick={() => setSelectedCategories(category)}
-          className={
-            selectedCategories === category ? styles.active : styles.item
-          }
-          key={category}
+          onClick={() => setSelectedCategories(null)}
+          className={!selectedCategories ? styles.active : styles.item}
         >
-          {category}
+          All
         </button>
-      ))}
-    </div>
-  );
-};
+
+        {categories.map((category) => (
+          <button
+            onClick={() => setSelectedCategories(category)}
+            className={
+              selectedCategories === category ? styles.active : styles.item
+            }
+            key={category}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+    );
+  }
+);
